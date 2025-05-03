@@ -103,7 +103,7 @@ int main(int argc, char **argv)
     ENetEvent event;
     ENetPeer *peer;
 
-    enet_address_set_host(&address, "127.0.0.1");
+    enet_address_set_host(&address, "192.168.1.83");
     address.port = 7777;
     peer = enet_host_connect(client, &address, 1, 0);
 
@@ -116,12 +116,12 @@ int main(int argc, char **argv)
     if (enet_host_service(client, &event, 1000) > 0 &&
         event.type == ENET_EVENT_TYPE_CONNECT)
     {
-        puts("Connection to 127.0.0.1:7777 succeeded.");
+        puts("Connection to 192.168.1.83:7777 succeeded.");
     }
     else
     {
         enet_peer_reset(peer);
-        puts("Connection to 127.0.0.1:7777 failed.");
+        puts("Connection to 192.168.1.83:7777 failed.");
         return EXIT_SUCCESS;
     }
     cout << "ENet client initialized successfully." << endl;
