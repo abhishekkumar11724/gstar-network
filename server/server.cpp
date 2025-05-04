@@ -100,7 +100,7 @@ int main(int argc, char **argv)
             switch (event.type)
             {
             case ENET_EVENT_TYPE_CONNECT:
-                cout << "new peer connected at :" << event.peer->address.host << " : " << event.peer->address.host << endl;
+                {cout << "new peer connected at :" << event.peer->address.host << " : " << event.peer->address.host << endl;
                 for (auto const &x : clientMap)
                 {
                     char send_data = {'\0'};
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
                 sprintf(data_to_send, "3|%d", new_player_id);
                 //broad cast
                 sendPacket(event.peer, data_to_send);
-                break;
+                break;}
             case ENET_EVENT_TYPE_RECEIVE:
                 cout << "A packet of length " << event.packet->dataLength << " containing " << event.packet->data << " was received from " << event.peer->data << " at " << event.peer->address.host << " : " << event.peer->address.port << " on channel " << event.channelID << endl;
 
@@ -124,6 +124,7 @@ int main(int argc, char **argv)
             case ENET_EVENT_TYPE_DISCONNECT:
                 cout << event.peer->data << " disconnected. at " << event.peer->address.host << " : " << event.peer->address.port << endl;
                 event.peer->data = NULL;
+                break;
             case ENET_EVENT_TYPE_NONE:
                 cout << "event type ENET_EVENT_TYPE_NONE occured, now exiting." << endl;
                 break;
