@@ -71,7 +71,8 @@ void * msgLoop(void *arg) {
         while(enet_host_service(client, &event, 1000 )>0) {
             switch(event.type) {
                 case ENET_EVENT_TYPE_RECEIVE:
-                    cout << "A packet of length" << event.packet->dataLength << "containing" << event.packet->data << " was received from" << event.peer->data << " at " << event.peer->address.host << " : " << event.peer->address.port << " on channel " << event.channelID << endl;
+                    // cout << "A packet of length" << event.packet->dataLength << "containing" << event.packet->data << " was received from" << event.peer->data << " at " << event.peer->address.host << " : " << event.peer->address.port << " on channel " << event.channelID << endl;
+                    parseData(event.packet->data);
                     enet_packet_destroy(event.packet);
                     break;
             }
@@ -136,7 +137,8 @@ int main(int argc, char **argv)
             break;
 
         case ENET_EVENT_TYPE_RECEIVE:
-            cout << "A packet of length " << event.packet->dataLength << " containing " << event.packet->data << " was received from " << event.peer->data << " at " << event.peer->address.host << " : " << event.peer->address.port << " on channel " << event.channelID << endl;
+            // cout << "A packet of length " << event.packet->dataLength << " containing " << event.packet->data << " was received from " << event.peer->data << " at " << event.peer->address.host << " : " << event.peer->address.port << " on channel " << event.channelID << endl;
+            parseData(event.packet->data);
             enet_packet_destroy(event.packet);
             break;
 

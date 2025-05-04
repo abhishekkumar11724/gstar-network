@@ -22,8 +22,9 @@ void sendPacket(ENetPeer *peer, const char *msg)
     enet_peer_send(peer, 0, packet);
 }
 
-void broadcastPacket(ENetHost* server, const char * data) {
-    ENetPacket * packet = enet_packet_create(data, strlen(data)+1, ENET_PACKET_FLAG_RELIABLE);
+void broadcastPacket(ENetHost *server, const char *data)
+{
+    ENetPacket *packet = enet_packet_create(data, strlen(data) + 1, ENET_PACKET_FLAG_RELIABLE);
     enet_host_broadcast(server, 0, packet);
 }
 
@@ -38,16 +39,17 @@ void parseData(ENetHost *server, int id, unsigned char *data)
     switch (data_type)
     {
     case 1:
-       {
+    {
         char msg[80];
-        sscanf(( const char *)data, "%*d|%[^\n]", &msg );
+        sscanf((const char *)data, "%*d|%[^\n]", &msg);
         char send_data[1024];
         sprintf(send_data, "1|%d|%s", id, msg);
 
         // broadcast packet
+        broadcastPacket(server, send_data);
 
         break;
-       }
+    }
     case 2:
     {
         char username[80];
@@ -56,6 +58,7 @@ void parseData(ENetHost *server, int id, unsigned char *data)
 
         sprintf(send_data, "2|%d|%s", id, username);
         cout << "SEND : " << send_data << endl;
+        broadcastPacket(server, send_data);
         clientMap[id]->setUserName(username);
         break;
     }
@@ -100,31 +103,44 @@ int main(int argc, char **argv)
             switch (event.type)
             {
             case ENET_EVENT_TYPE_CONNECT:
-                {cout << "new peer connected at :" << event.peer->address.host << " : " << event.peer->address.host << endl;
+            {
+                cout << "new peer connected at :" << event.peer->address.host << " : " << event.peer->address.host << endl;
                 for (auto const &x : clientMap)
                 {
-                    char send_data = {'\0'};
+                    char send_data[1024] = {'\0'};
                     sprintf((char *)send_data, "2|%d|%s", x.first, x.second->getUserName().c_str());
+                    broadcastPacket(server, send_data);
                 }
                 new_player_id++;
                 clientMap[new_player_id] = new ClientData(new_player_id);
                 event.peer->data = clientMap[new_player_id];
                 char data_to_send[126] = {'\0'};
                 sprintf(data_to_send, "3|%d", new_player_id);
-                //broad cast
+                // broad cast
                 sendPacket(event.peer, data_to_send);
-                break;}
+                break;
+            }
             case ENET_EVENT_TYPE_RECEIVE:
-                cout << "A packet of length " << event.packet->dataLength << " containing " << event.packet->data << " was received from " << event.peer->data << " at " << event.peer->address.host << " : " << event.peer->address.port << " on channel " << event.channelID << endl;
+            {
+                // cout << "A packet of length " << event.packet->dataLength << " containing " << event.packet->data << " was received from " << event.peer->data << " at " << event.peer->address.host << " : " << event.peer->address.port << " on channel " << event.channelID << endl;
 
-                parseData(server, static_cast<ClientData*> (event.peer->data)->getID(), event.packet->data);
+                parseData(server, static_cast<ClientData *>(event.peer->data)->getID(), event.packet->data);
                 enet_packet_destroy(event.packet);
                 break;
+            }
 
             case ENET_EVENT_TYPE_DISCONNECT:
+            {
                 cout << event.peer->data << " disconnected. at " << event.peer->address.host << " : " << event.peer->address.port << endl;
                 event.peer->data = NULL;
+
+                char disconnect_data[126] = {'\0'};
+                sprintf(disconnect_data, "4|%d", static_cast<ClientData *>(event.peer->data)->getID());
+                broadcastPacket(server, disconnect_data);
+                event.peer->data = NULL;
                 break;
+            }
+
             case ENET_EVENT_TYPE_NONE:
                 cout << "event type ENET_EVENT_TYPE_NONE occured, now exiting." << endl;
                 break;
